@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Browse Jobs | ATS Portal{% endblock %}
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+    <div>
+        <h1 class="h3 fw-bold mb-1">Active Job Openings</h1>
+        <p class="text-muted mb-0">{{ total }} active requisition(s) matching your criteria</p>
+    </div>
+</div>
+
+<form method="GET" action="{{ url_for('web.jobs_list_page') }}" class="ats-card p-3 mb-4">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+            <label class="form-label small fw-medium mb-1">Keyword (Title, Company, Location)</label>
+            <input type="text" class="form-control" name="title" value="{{ filters.title }}" placeholder="e.g. Python, Remote, Google">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-medium mb-1">Workplace</label>
+            <select class="form-select" name="workplace_type">
+                <option value="">All</option>
+                {% for w in workplace_options %}
+                    <option value="{{ w }}" {% if filters.workplace_type == w %}selected{% endif %}>{{ w }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-medium mb-1">Employment</label>
+            <select class="form-select" name="employment_type">
+                <option value="">All</option>
+                {% for e in employment_options %}
+                    <option value="{{ e }}" {% if filters.employment_type == e %}selected{% endif %}>{{ e }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small fw-medium mb-1">Sort By</label>
+            <select class="form-select" name="sort">
+                <option value="newest" {% if filters.sort == 'newest' %}selected{% endif %}>Newest</option>
+                <option value="salary_desc" {% if filters.sort == 'salary_desc' %}selected{% endif %}>Highest Salary</option>
+                <option value="deadline_asc" {% if filters.sort == 'deadline_asc' %}selected{% endif %}>Soonest Deadline</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+            <a href="{{ url_for('web.jobs_list_page') }}" class="btn btn-outline-secondary">Reset</a>
+        </div>
+    </div>
+</form>
+
+<div class="row g-3">
+    {% for job in jobs %}
+        <div class="col-md-6 col-lg-4">
+            <div class="ats-card ats-card-hover p-4 h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-primary-subtle text-primary">{{ job.workplace_type }}</span>
+                    <span class="badge bg-success-subtle text-success">{{ job.status }}</span>
+                </div>
+                <h2 class="h5 fw-bold mb-1">{{ job.title }}</h2>
+                <p class="text-muted small mb-2">
+                    <i class="bi bi-building me-1"></i>{{ job.company_name }} ·
+                    <i class="bi bi-geo-alt me-1"></i>{{ job.location }}
+                </p>
+                <div class="small text-secondary mb-3">
+                    <div><i class="bi bi-briefcase me-1"></i>{{ job.employment_type }} · {{ job.min_experience_years }}+ yrs exp</div>
+                    <div>
+                        <i class="bi bi-cash-stack me-1"></i>
+                        {% if job.salary_min %}${{ "{:,.0f}".format(job.salary_min) }}{% if job.salary_max %} – ${{ "{:,.0f}".format(job.salary_max) }}{% endif %}{% else %}Competitive{% endif %}
+                    </div>
+                    {% if job.deadline_date %}
+                        <div><i class="bi bi-calendar-event me-1"></i>Deadline: {{ job.deadline_date }}</div>
+                    {% endif %}
+                </div>
+                <div class="mt-auto pt-3 border-top">
+                    <a href="{{ url_for('web.job_detail_page', job_id=job.job_id) }}" class="btn btn-outline-primary w-100 fw-medium">View Details &amp; Apply</a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="col-12">
+            <div class="ats-card p-5 text-center text-muted">
+                No active jobs matched your search filters.
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% if total_pages > 1 %}
+<nav aria-label="Jobs pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('web.jobs_list_page', page=page-1, title=filters.title, workplace_type=filters.workplace_type, employment_type=filters.employment_type, sort=filters.sort) }}">Previous</a>
+        </li>
+        {% for p in range(1, total_pages + 1) %}
+            <li class="page-item {% if p == page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('web.jobs_list_page', page=p, title=filters.title, workplace_type=filters.workplace_type, employment_type=filters.employment_type, sort=filters.sort) }}">{{ p }}</a>
+            </li>
+        {% endfor %}
+        <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('web.jobs_list_page', page=page+1, title=filters.title, workplace_type=filters.workplace_type, employment_type=filters.employment_type, sort=filters.sort) }}">Next</a>
+        </li>
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+

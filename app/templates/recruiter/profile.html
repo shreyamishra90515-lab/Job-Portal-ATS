@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Company Profile | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <h1 class="h3 fw-bold mb-4">Recruiter &amp; Company Profile</h1>
+        <div class="ats-card p-4">
+            <form data-api-url="/api/recruiter/profile" data-api-method="PUT" data-reload="true">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium">Recruiter Name</label>
+                        <input type="text" class="form-control" value="{{ profile.first_name }} {{ profile.last_name }}" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium">Work Email</label>
+                        <input type="email" class="form-control" value="{{ profile.email }}" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium">Company Name *</label>
+                        <input type="text" class="form-control" name="company_name" value="{{ profile.company_name }}" required maxlength="150">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium">Company Website</label>
+                        <input type="url" class="form-control" name="company_website" value="{{ profile.company_website or '' }}" maxlength="255">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-medium">Department</label>
+                        <input type="text" class="form-control" name="department" value="{{ profile.department or '' }}" maxlength="100">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-medium">Designation</label>
+                        <input type="text" class="form-control" name="designation" value="{{ profile.designation or '' }}" maxlength="100">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-medium">Office Location</label>
+                        <input type="text" class="form-control" name="office_location" value="{{ profile.office_location or '' }}" maxlength="150">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium">Phone</label>
+                        <input type="text" class="form-control" name="phone" value="{{ profile.phone or '' }}" maxlength="20">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-4">Save Company Profile</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

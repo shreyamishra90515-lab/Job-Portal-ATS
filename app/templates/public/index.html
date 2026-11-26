@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}ATS Portal — Enterprise Job Portal & Application Tracking{% endblock %}
+{% block content %}
+<section class="hero-ats mb-5">
+    <div class="row align-items-center g-4">
+        <div class="col-lg-8">
+            <span class="badge bg-light text-primary mb-3 px-3 py-2">MySQL 8.0+ · Flask · RBAC Secured</span>
+            <h1 class="display-5 fw-bold mb-3">Job Portal &amp; Application Tracking System</h1>
+            <p class="lead text-white-50 mb-4">
+                Connect verified engineering talent with hiring teams through automated ATS skill-match scoring,
+                clash-free interview scheduling, and full application lifecycle auditing.
+            </p>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('web.jobs_list_page') }}" class="btn btn-light btn-lg fw-semibold text-primary">
+                    <i class="bi bi-search me-2"></i>Browse Active Jobs
+                </a>
+                {% if not current_user %}
+                    <a href="{{ url_for('web.register_candidate_page') }}" class="btn btn-outline-light btn-lg">Register as Candidate</a>
+                    <a href="{{ url_for('web.register_recruiter_page') }}" class="btn btn-outline-light btn-lg">Register as Recruiter</a>
+                    <a href="{{ url_for('web.login_page') }}" class="btn btn-link text-white btn-lg text-decoration-none">Sign In &rarr;</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="row g-3 text-dark">
+                <div class="col-6">
+                    <div class="ats-card p-3 text-center">
+                        <div class="h3 fw-bold text-primary mb-0">{{ stats.active_jobs or 0 }}</div>
+                        <small class="text-muted">Active Jobs</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="ats-card p-3 text-center">
+                        <div class="h3 fw-bold text-success mb-0">{{ stats.companies or 0 }}</div>
+                        <small class="text-muted">Hiring Teams</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="ats-card p-3 text-center">
+                        <div class="h3 fw-bold text-info mb-0">{{ stats.candidates or 0 }}</div>
+                        <small class="text-muted">Candidates</small>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="ats-card p-3 text-center">
+                        <div class="h3 fw-bold text-warning mb-0">{{ stats.tracked_skills or 0 }}</div>
+                        <small class="text-muted">Tracked Skills</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="ats-card p-4 h-100">
+                <i class="bi bi-cpu-fill fs-2 text-primary mb-3 d-block"></i>
+                <h2 class="h5 fw-semibold">Automated ATS Match Scoring</h2>
+                <p class="text-muted small mb-0">
+                    MySQL stored function <code>fn_calculate_match_score</code> evaluates mandatory and preferred
+                    skills, experience ratios, and proficiency tiers on every application.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="ats-card p-4 h-100">
+                <i class="bi bi-calendar-check-fill fs-2 text-success mb-3 d-block"></i>
+                <h2 class="h5 fw-semibold">Conflict-Free Interview Scheduling</h2>
+                <p class="text-muted small mb-0">
+                    Transactional procedures and database triggers enforce interviewer calendar collision checks
+                    and advance candidate pipeline states automatically.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="ats-card p-4 h-100">
+                <i class="bi bi-shield-lock-fill fs-2 text-danger mb-3 d-block"></i>
+                <h2 class="h5 fw-semibold">RBAC &amp; Audit Integrity</h2>
+                <p class="text-muted small mb-0">
+                    Bcrypt hashing, Flask-WTF CSRF, parameterized SQL, object-level IDOR checks, and immutable
+                    <code>application_status_history</code> triggers protect every workflow.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 fw-bold mb-0">Latest Open Positions</h2>
+        <a href="{{ url_for('web.jobs_list_page') }}" class="btn btn-sm btn-outline-primary">View All Jobs</a>
+    </div>
+    <div class="row g-3">
+        {% for job in featured_jobs %}
+            <div class="col-md-6 col-lg-4">
+                <div class="ats-card ats-card-hover p-4 h-100 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge bg-primary-subtle text-primary">{{ job.workplace_type }}</span>
+                        <span class="badge bg-secondary-subtle text-secondary">{{ job.employment_type }}</span>
+                    </div>
+                    <h3 class="h6 fw-bold mb-1">{{ job.title }}</h3>
+                    <p class="text-muted small mb-2">{{ job.company_name }} · {{ job.location }}</p>
+                    <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+                        <small class="fw-semibold text-success">
+                            {% if job.salary_min %}${{ "{:,.0f}".format(job.salary_min) }}{% if job.salary_max %} – ${{ "{:,.0f}".format(job.salary_max) }}{% endif %}{% else %}Competitive{% endif %}
+                        </small>
+                        <a href="{{ url_for('web.job_detail_page', job_id=job.job_id) }}" class="btn btn-sm btn-primary">Details</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="ats-card p-4 text-center text-muted">No active jobs available right now.</div>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+

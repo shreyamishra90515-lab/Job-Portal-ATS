@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Candidate Dashboard | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+            <div>
+                <h1 class="h3 fw-bold mb-1">Welcome back, {{ current_user.first_name }}!</h1>
+                <p class="text-muted mb-0">{{ (stats.headline if stats else '') or 'Track your job applications, ATS match scores, and upcoming interviews.' }}</p>
+            </div>
+            <a href="{{ url_for('web.jobs_list_page') }}" class="btn btn-primary"><i class="bi bi-search me-1"></i>Browse Jobs</a>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="ats-card stat-card p-3">
+                    <div class="small text-muted">Total Applied</div>
+                    <div class="h4 fw-bold mb-0">{{ stats.total_applications if stats else 0 }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="ats-card stat-card stat-info p-3">
+                    <div class="small text-muted">Active</div>
+                    <div class="h4 fw-bold mb-0">{{ stats.active_applications if stats else 0 }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="ats-card stat-card stat-warning p-3">
+                    <div class="small text-muted">Interviews</div>
+                    <div class="h4 fw-bold mb-0">{{ stats.total_interviews if stats else 0 }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="ats-card stat-card stat-success p-3">
+                    <div class="small text-muted">Offers</div>
+                    <div class="h4 fw-bold mb-0">{{ stats.offers_received if stats else 0 }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="ats-card stat-card stat-danger p-3">
+                    <div class="small text-muted">Rejections</div>
+                    <div class="h4 fw-bold mb-0">{{ stats.rejections_received if stats else 0 }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="ats-card stat-card p-3">
+                    <div class="small text-muted">Avg Match</div>
+                    <div class="h4 fw-bold text-primary mb-0">{{ stats.avg_match_score if stats and stats.avg_match_score is not none else '0.0' }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ats-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 fw-bold mb-0">Recent Applications</h2>
+                <a href="{{ url_for('web.candidate_applications_page') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Status</th>
+                            <th>Match</th>
+                            <th>Applied</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in recent_apps %}
+                            <tr>
+                                <td><a href="{{ url_for('web.job_detail_page', job_id=app.job_id) }}" class="fw-semibold text-decoration-none">{{ app.job_title }}</a></td>
+                                <td>{{ app.company_name }}</td>
+                                <td><span class="badge bg-primary-subtle text-primary badge-status">{{ app.current_status }}</span></td>
+                                <td class="match-score-pill">{{ app.match_score }}%</td>
+                                <td class="small text-muted">{{ app.applied_at }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="text-center text-muted py-3">You have not applied to any jobs yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="ats-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 fw-bold mb-0">Upcoming Interviews</h2>
+                <a href="{{ url_for('web.candidate_interviews_page') }}" class="btn btn-sm btn-outline-primary">All Interviews</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Role</th>
+                            <th>Company</th>
+                            <th>Round</th>
+                            <th>Interviewer</th>
+                            <th>Scheduled At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for iv in upcoming_interviews %}
+                            <tr>
+                                <td class="fw-semibold">{{ iv.job_title }}</td>
+                                <td>{{ iv.company_name }}</td>
+                                <td>Round {{ iv.round_number }} ({{ iv.round_type }})</td>
+                                <td>{{ iv.interviewer_name }}</td>
+                                <td>{{ iv.scheduled_at }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="text-center text-muted py-3">No upcoming interviews scheduled.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

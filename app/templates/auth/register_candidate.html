@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Candidate Registration | ATS Portal{% endblock %}
+{% block content %}
+<div class="row justify-content-center py-3">
+    <div class="col-lg-8">
+        <div class="ats-card p-4 p-md-5">
+            <h1 class="h4 fw-bold mb-1">Create Candidate Account</h1>
+            <p class="text-muted small mb-4">Register to build your profile, manage resumes, and apply with automated ATS match scoring.</p>
+            <form method="POST" action="{{ url_for('web.register_candidate_page') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">First Name *</label>
+                        <input type="text" class="form-control" name="first_name" value="{{ form_data.get('first_name', '') }}" required maxlength="100">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Last Name *</label>
+                        <input type="text" class="form-control" name="last_name" value="{{ form_data.get('last_name', '') }}" required maxlength="100">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Email *</label>
+                        <input type="email" class="form-control" name="email" value="{{ form_data.get('email', '') }}" required maxlength="255">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Password *</label>
+                        <input type="password" class="form-control" name="password" required minlength="8" maxlength="72">
+                        <div class="form-text">8–72 chars with uppercase, lowercase, digit &amp; special character.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Phone</label>
+                        <input type="text" class="form-control" name="phone" value="{{ form_data.get('phone', '') }}" maxlength="20" placeholder="+1-555-0100">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Years of Experience</label>
+                        <input type="number" step="0.5" min="0" max="60" class="form-control" name="years_of_experience" value="{{ form_data.get('years_of_experience', '0') }}">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium">Professional Headline</label>
+                        <input type="text" class="form-control" name="headline" value="{{ form_data.get('headline', '') }}" maxlength="255" placeholder="e.g. Full-Stack Python &amp; SQL Engineer">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Current Location</label>
+                        <input type="text" class="form-control" name="current_location" value="{{ form_data.get('current_location', '') }}" maxlength="150">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Highest Education</label>
+                        <input type="text" class="form-control" name="highest_education" value="{{ form_data.get('highest_education', '') }}" maxlength="100">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">LinkedIn URL</label>
+                        <input type="url" class="form-control" name="linkedin_url" value="{{ form_data.get('linkedin_url', '') }}" maxlength="255" placeholder="https://linkedin.com/in/...">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-medium">Portfolio URL</label>
+                        <input type="url" class="form-control" name="portfolio_url" value="{{ form_data.get('portfolio_url', '') }}" maxlength="255" placeholder="https://...">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-medium">Summary</label>
+                        <textarea class="form-control" name="summary" rows="3" maxlength="2000">{{ form_data.get('summary', '') }}</textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-4 py-2 fw-semibold">Register Candidate Account</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}Applicants — {{ job.title }} | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <div class="mb-3">
+            <a href="{{ url_for('web.recruiter_jobs_page') }}" class="text-decoration-none small">&larr; Back to Manage Jobs</a>
+        </div>
+        <div class="ats-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h4 fw-bold mb-1">Applicants for: {{ job.title }}</h1>
+                    <p class="text-muted small mb-0">{{ job.location }} · {{ job.employment_type }} · Ranked by ATS Match Score</p>
+                </div>
+                <span class="badge bg-primary fs-6">{{ applicants|length }} Applicant(s)</span>
+            </div>
+        </div>
+
+        <div class="d-grid gap-3">
+            {% for app in applicants %}
+                <div class="ats-card p-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-2 mb-2">
+                        <div>
+                            <h2 class="h5 fw-bold mb-0">{{ app.candidate_name }}</h2>
+                            <div class="small text-muted">
+                                {{ app.candidate_email }} · {{ app.candidate_experience }} yrs exp · {{ app.highest_education or 'N/A' }} · {{ app.current_location or 'N/A' }}
+                            </div>
+                            <div class="small text-secondary mt-1">{{ app.candidate_headline or '' }}</div>
+                        </div>
+                        <div class="text-md-end">
+                            <div class="badge bg-success-subtle text-success fs-6 mb-1">{{ app.match_score }}% Match</div>
+                            <div><span class="badge bg-primary badge-status">{{ app.current_status }}</span></div>
+                        </div>
+                    </div>
+
+                    <div class="small bg-light p-3 rounded mb-3">
+                        <div><strong>Resume:</strong> {{ app.resume_file_name }}</div>
+                        {% if app.cover_letter %}
+                            <div class="mt-1"><strong>Cover Letter:</strong> {{ app.cover_letter }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-open-status-modal"
+                                data-bs-toggle="modal" data-bs-target="#updateStatusModal"
+                                data-app-id="{{ app.application_id }}"
+                                data-current-status="{{ app.current_status }}"
+                                data-candidate-name="{{ app.candidate_name }}">
+                            Update Status
+                        </button>
+                        {% if app.current_status not in ('REJECTED', 'WITHDRAWN') %}
+                            <button type="button" class="btn btn-sm btn-outline-success btn-open-interview-modal"
+                                    data-bs-toggle="modal" data-bs-target="#scheduleInterviewModal"
+                                    data-app-id="{{ app.application_id }}"
+                                    data-candidate-name="{{ app.candidate_name }}">
+                                Schedule Interview
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="ats-card p-5 text-center text-muted">No candidates have applied to this job yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Update Application Status Modal -->
+<div class="modal fade" id="updateStatusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="modal-content" id="updateAppStatusForm" data-api-url="" data-api-method="POST" data-reload="true">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusModalTitle">Update Application Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body d-grid gap-3">
+                <div>
+                    <label class="form-label small fw-medium">New Status</label>
+                    <select class="form-select" name="status" required>
+                        {% for st in status_options %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label small fw-medium">Audit Notes</label>
+                    <textarea class="form-control" name="change_notes" rows="3" maxlength="500" placeholder="Reason for transition..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save Status</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Schedule Interview Modal -->
+<div class="modal fade" id="scheduleInterviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="modal-content" id="scheduleInterviewForm" data-api-url="/api/interviews/schedule" data-api-method="POST" data-reload="true">
+            <div class="modal-header">
+                <h5 class="modal-title" id="interviewModalTitle">Schedule Interview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body row g-3">
+                <input type="hidden" name="application_id" value="">
+                <div class="col-12">
+                    <label class="form-label small fw-medium">Interviewer Name *</label>
+                    <input type="text" class="form-control" name="interviewer_name" required maxlength="150">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-medium">Round Number</label>
+                    <input type="number" min="1" class="form-control" name="round_number" value="1" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-medium">Round Type</label>
+                    <select class="form-select" name="round_type">
+                        {% for rt in round_types %}<option value="{{ rt }}">{{ rt }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-7">
+                    <label class="form-label small fw-medium">Scheduled Date &amp; Time *</label>
+                    <input type="datetime-local" class="form-control" name="scheduled_at" required>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label small fw-medium">Duration (min)</label>
+                    <input type="number" min="15" max="480" class="form-control" name="duration_minutes" value="60" required>
+                </div>
+                <div class="col-12">
+                    <label class="form-label small fw-medium">Meeting Link</label>
+                    <input type="url" class="form-control" name="meeting_link" maxlength="500" placeholder="https://meet.example.com/...">
+                </div>
+                <div class="col-12">
+                    <label class="form-label small fw-medium">Location</label>
+                    <input type="text" class="form-control" name="location" value="Online" maxlength="150">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Schedule Interview</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

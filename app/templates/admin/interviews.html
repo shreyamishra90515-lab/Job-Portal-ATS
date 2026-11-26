@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Interviews Overview | Admin | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <h1 class="h3 fw-bold mb-4">All Platform Interviews ({{ interviews|length }})</h1>
+        <div class="ats-card p-4">
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Candidate</th>
+                            <th>Job &amp; Company</th>
+                            <th>Round</th>
+                            <th>Interviewer</th>
+                            <th>Scheduled</th>
+                            <th>Status</th>
+                            <th>Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for iv in interviews %}
+                            <tr>
+                                <td class="fw-semibold">{{ iv.candidate_name }}</td>
+                                <td>{{ iv.job_title }}<div class="small text-muted">{{ iv.company_name }}</div></td>
+                                <td>#{{ iv.round_number }} ({{ iv.round_type }})</td>
+                                <td>{{ iv.interviewer_name }}</td>
+                                <td class="small">{{ iv.scheduled_at }}</td>
+                                <td><span class="badge bg-info-subtle text-info-emphasis">{{ iv.interview_status }}</span></td>
+                                <td>{{ iv.rating ~ '/5' if iv.rating else '—' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

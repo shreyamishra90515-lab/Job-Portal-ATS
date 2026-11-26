@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}My Interviews | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <h1 class="h3 fw-bold mb-4">My Scheduled Interviews</h1>
+        <div class="ats-card p-4">
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Job &amp; Company</th>
+                            <th>Round</th>
+                            <th>Interviewer</th>
+                            <th>Date &amp; Time</th>
+                            <th>Duration</th>
+                            <th>Location / Link</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for iv in interviews %}
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">{{ iv.job_title }}</div>
+                                    <div class="small text-muted">{{ iv.company_name }}</div>
+                                </td>
+                                <td>Round {{ iv.round_number }}<div class="small text-muted">{{ iv.round_type }}</div></td>
+                                <td>{{ iv.interviewer_name }}</td>
+                                <td class="small">{{ iv.scheduled_at }}</td>
+                                <td>{{ iv.duration_minutes }} min</td>
+                                <td class="small">
+                                    <div>{{ iv.location or 'Online' }}</div>
+                                    {% if iv.meeting_link %}
+                                        <a href="{{ iv.meeting_link }}" target="_blank" rel="noopener noreferrer">Join Meeting</a>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-info-subtle text-info-emphasis badge-status">{{ iv.interview_status }}</span></td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="7" class="text-center text-muted py-4">No interviews scheduled for your applications yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }} | ATS Portal{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{{ url_for('web.jobs_list_page') }}" class="text-decoration-none small">&larr; Back to All Jobs</a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="ats-card p-4 p-md-5 mb-4">
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="badge bg-primary">{{ job.employment_type }}</span>
+                <span class="badge bg-info text-dark">{{ job.workplace_type }}</span>
+                <span class="badge {% if job.status == 'ACTIVE' %}bg-success{% else %}bg-secondary{% endif %}">{{ job.status }}</span>
+            </div>
+            <h1 class="h3 fw-bold mb-2">{{ job.title }}</h1>
+            <p class="text-muted mb-4">
+                <strong>{{ job.company_name }}</strong> · {{ job.location }}
+                {% if job.company_website %}
+                    · <a href="{{ job.company_website }}" target="_blank" rel="noopener noreferrer">Website</a>
+                {% endif %}
+            </p>
+
+            <h2 class="h6 text-uppercase text-muted fw-bold">Role Description</h2>
+            <p class="mb-4">{{ job.description }}</p>
+
+            <h2 class="h6 text-uppercase text-muted fw-bold mb-3">Required &amp; Preferred Skills</h2>
+            {% if skills %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-ats align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Skill</th>
+                                <th>Category</th>
+                                <th>Priority</th>
+                                <th>Min Experience</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sk in skills %}
+                                <tr>
+                                    <td class="fw-semibold">{{ sk.skill_name }}</td>
+                                    <td>{{ sk.skill_category }}</td>
+                                    <td>
+                                        <span class="badge {% if sk.is_required %}bg-danger-subtle text-danger{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                                            {{ sk.requirement_type }}
+                                        </span>
+                                    </td>
+                                    <td>{{ sk.min_years_experience }} yrs</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted small mb-0">No specific skills listed (100% baseline skill match).</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="ats-card p-4 mb-4">
+            <h2 class="h6 fw-bold text-uppercase text-muted mb-3">Position Summary</h2>
+            <ul class="list-unstyled small mb-0 d-grid gap-2">
+                <li><strong>Min Experience:</strong> {{ job.min_experience_years }} years</li>
+                <li>
+                    <strong>Salary Range:</strong>
+                    {% if job.salary_min %}${{ "{:,.0f}".format(job.salary_min) }}{% if job.salary_max %} – ${{ "{:,.0f}".format(job.salary_max) }}{% endif %}{% else %}Not specified{% endif %}
+                </li>
+                <li><strong>Deadline:</strong> {{ job.deadline_date or 'Open until filled' }}</li>
+                <li><strong>Office:</strong> {{ job.office_location or job.location }}</li>
+            </ul>
+        </div>
+
+        <div class="ats-card p-4">
+            {% if current_user and current_user.role == 'CANDIDATE' %}
+                {% if match_preview is not none %}
+                    <div class="alert alert-info py-2 mb-3">
+                        <div class="small fw-semibold">Your Estimated ATS Match Score</div>
+                        <div class="h4 fw-bold mb-0">{{ match_preview }}%</div>
+                    </div>
+                {% endif %}
+
+                {% if existing_application %}
+                    <div class="alert alert-success mb-0">
+                        <div class="fw-semibold mb-1"><i class="bi bi-check-circle-fill me-1"></i>Already Applied</div>
+                        <div class="small">Status: <strong>{{ existing_application.current_status }}</strong></div>
+                        <div class="small">Match Score: <strong>{{ existing_application.match_score }}%</strong></div>
+                        <a href="{{ url_for('web.candidate_applications_page') }}" class="btn btn-sm btn-outline-success mt-2 w-100">View My Applications</a>
+                    </div>
+                {% elif job.status != 'ACTIVE' %}
+                    <div class="alert alert-secondary mb-0">This job is currently <strong>{{ job.status }}</strong> and is not accepting applications.</div>
+                {% elif is_expired %}
+                    <div class="alert alert-warning mb-0">The application deadline ({{ job.deadline_date }}) has passed.</div>
+                {% elif not candidate_resumes %}
+                    <div class="alert alert-warning mb-3">You must add a resume before applying.</div>
+                    <a href="{{ url_for('web.candidate_resumes_page') }}" class="btn btn-primary w-100">Add Resume</a>
+                {% else %}
+                    <h2 class="h6 fw-bold mb-3">Apply Now</h2>
+                    <form data-api-url="/api/jobs/{{ job.job_id }}/apply" data-api-method="POST" data-reload="true">
+                        <div class="mb-3">
+                            <label class="form-label small fw-medium">Select Resume *</label>
+                            <select class="form-select" name="resume_id" required>
+                                {% for r in candidate_resumes %}
+                                    <option value="{{ r.resume_id }}" {% if r.is_primary %}selected{% endif %}>
+                                        {{ r.file_name }}{% if r.is_primary %} (Primary){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-medium">Cover Letter</label>
+                            <textarea class="form-control" name="cover_letter" rows="4" maxlength="2000" placeholder="Highlight your relevant experience..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 fw-semibold">Apply Now</button>
+                    </form>
+                {% endif %}
+            {% elif current_user %}
+                <div class="text-muted small">
+                    Signed in as <strong>{{ current_user.role }}</strong>. Only candidate accounts can submit applications.
+                    {% if current_user.role == 'RECRUITER' %}
+                        <div class="mt-2">
+                            <a href="{{ url_for('web.recruiter_job_applicants_page', job_id=job.job_id) }}" class="btn btn-sm btn-outline-primary w-100">View Applicants (If Owner)</a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="small text-muted mb-3">Sign in as a candidate to see your match score and apply.</p>
+                <a href="{{ url_for('web.login_page', next=request.path) }}" class="btn btn-primary w-100">Sign In to Apply</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

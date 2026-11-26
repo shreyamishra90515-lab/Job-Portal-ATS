@@ -1,0 +1,29 @@
+# Environments & Secrets
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE Configurations
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}My Profile & Skills | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <h1 class="h3 fw-bold mb-4">Candidate Profile &amp; Skills</h1>
+
+        <div class="ats-card p-4 mb-4">
+            <h2 class="h5 fw-bold mb-3">Professional Details</h2>
+            <form data-api-url="/api/candidate/profile" data-api-method="PUT" data-reload="true">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium">Full Name</label>
+                        <input type="text" class="form-control" value="{{ profile.first_name }} {{ profile.last_name }}" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium">Email</label>
+                        <input type="email" class="form-control" value="{{ profile.email }}" disabled>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label small fw-medium">Headline</label>
+                        <input type="text" class="form-control" name="headline" value="{{ profile.headline or '' }}" maxlength="255">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-medium">Years of Experience</label>
+                        <input type="number" step="0.5" min="0" max="60" class="form-control" name="years_of_experience" value="{{ profile.years_of_experience }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-medium">Phone</label>
+                        <input type="text" class="form-control" name="phone" value="{{ profile.phone or '' }}" maxlength="20">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-medium">Current Location</label>
+                        <input type="text" class="form-control" name="current_location" value="{{ profile.current_location or '' }}" maxlength="150">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-medium">Highest Education</label>
+                        <input type="text" class="form-control" name="highest_education" value="{{ profile.highest_education or '' }}" maxlength="100">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium">LinkedIn URL</label>
+                        <input type="url" class="form-control" name="linkedin_url" value="{{ profile.linkedin_url or '' }}" maxlength="255">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-medium">Portfolio URL</label>
+                        <input type="url" class="form-control" name="portfolio_url" value="{{ profile.portfolio_url or '' }}" maxlength="255">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-medium">Summary</label>
+                        <textarea class="form-control" name="summary" rows="3" maxlength="2000">{{ profile.summary or '' }}</textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Profile Changes</button>
+            </form>
+        </div>
+
+        <div class="ats-card p-4">
+            <h2 class="h5 fw-bold mb-3">My Verified Skills</h2>
+            <form data-api-url="/api/candidate/skills" data-api-method="POST" data-reload="true" class="row g-2 align-items-end mb-4">
+                <div class="col-md-5">
+                    <label class="form-label small fw-medium mb-1">Skill</label>
+                    <select class="form-select" name="skill_id" required>
+                        {% for sk in all_skills %}
+                            <option value="{{ sk.skill_id }}">{{ sk.skill_name }} ({{ sk.category }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-medium mb-1">Proficiency</label>
+                    <select class="form-select" name="proficiency_level" required>
+                        {% for lvl in proficiency_levels %}
+                            <option value="{{ lvl }}">{{ lvl }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-medium mb-1">Years</label>
+                    <input type="number" step="0.5" min="0" max="60" class="form-control" name="years_of_experience" value="1.0" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">Add / Update</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Skill</th>
+                            <th>Category</th>
+                            <th>Proficiency</th>
+                            <th>Experience</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cs in candidate_skills %}
+                            <tr>
+                                <td class="fw-semibold">{{ cs.skill_name }}</td>
+                                <td>{{ cs.skill_category }}</td>
+                                <td><span class="badge bg-info-subtle text-info-emphasis">{{ cs.proficiency_level }}</span></td>
+                                <td>{{ cs.skill_experience_years }} yrs</td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            data-api-action="/api/candidate/skills/{{ cs.skill_id }}"
+                                            data-api-method="DELETE"
+                                            data-confirm="Remove {{ cs.skill_name }} from your profile?">Remove</button>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="text-center text-muted py-3">No skills added yet. Add skills to boost your ATS match score.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

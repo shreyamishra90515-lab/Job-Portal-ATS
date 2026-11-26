@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}ATS Portal — Job Portal & Application Tracking System{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/ats.css') }}" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-ats sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('web.landing') }}">
+                <i class="bi bi-briefcase-fill text-primary"></i>
+                <span>ATS Portal</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#atsNavbar" aria-controls="atsNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="atsNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'web.jobs_list_page' %}active{% endif %}" href="{{ url_for('web.jobs_list_page') }}">
+                            <i class="bi bi-search me-1"></i>Browse Jobs
+                        </a>
+                    </li>
+                    {% if current_user %}
+                        {% if current_user.role == 'CANDIDATE' %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('web.candidate_dashboard') }}">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('web.candidate_applications_page') }}">My Applications</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('web.candidate_resumes_page') }}">Resumes</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('web.candidate_interviews_page') }}">Interviews</a></li>
+                        {% elif current_user.role == 'RECRUITER' %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('web.recruiter_dashboard') }}">Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('web.recruiter_jobs_page') }}">Manage Jobs</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('web.recruiter_interviews_page') }}">Interviews</a></li>
+                        {% elif current_user.role == 'ADMIN' %}
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('web.admin_dashboard') }}">Admin Dashboard</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('web.admin_users_page') }}">Users</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ url_for('web.admin_reports_page') }}">Reports</a></li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+                    {% if current_user %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="badge bg-primary">{{ current_user.role }}</span>
+                                <span>{{ current_user.first_name }} {{ current_user.last_name }}</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                <li class="dropdown-header small text-muted">{{ current_user.email }}</li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% if current_user.role == 'CANDIDATE' %}
+                                    <li><a class="dropdown-item" href="{{ url_for('web.candidate_profile_page') }}"><i class="bi bi-person me-2"></i>My Profile & Skills</a></li>
+                                {% elif current_user.role == 'RECRUITER' %}
+                                    <li><a class="dropdown-item" href="{{ url_for('web.recruiter_profile_page') }}"><i class="bi bi-building me-2"></i>Company Profile</a></li>
+                                {% elif current_user.role == 'ADMIN' %}
+                                    <li><a class="dropdown-item" href="{{ url_for('web.admin_audit_history_page') }}"><i class="bi bi-clock-history me-2"></i>Audit Trail</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{{ url_for('web.logout_page') }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Sign Out</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="{{ url_for('web.login_page') }}">Sign In</a></li>
+                        <li class="nav-item"><a class="btn btn-outline-light btn-sm" href="{{ url_for('web.register_candidate_page') }}">Candidate Sign Up</a></li>
+                        <li class="nav-item"><a class="btn btn-primary btn-sm" href="{{ url_for('web.register_recruiter_page') }}">Recruiter Sign Up</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-4">
+        <div id="ats-toast-container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="ats-footer py-4 mt-5">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <div>
+                <strong class="text-white">Job Portal & Application Tracking System (ATS)</strong> — University DBMS Capstone
+            </div>
+            <div>MySQL 8.0+ · Python Flask · Bootstrap 5 · Phase 4 RBAC &amp; CSRF Hardened</div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/ats.js') }}"></script>
+</body>
+</html>
+

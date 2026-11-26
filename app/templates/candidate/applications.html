@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}My Applications | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 fw-bold mb-0">My Job Applications</h1>
+            <a href="{{ url_for('web.jobs_list_page') }}" class="btn btn-primary btn-sm">Find More Jobs</a>
+        </div>
+
+        <div class="ats-card p-4">
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Resume</th>
+                            <th>Match Score</th>
+                            <th>Status</th>
+                            <th>Applied</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                            <tr>
+                                <td><a href="{{ url_for('web.job_detail_page', job_id=app.job_id) }}" class="fw-semibold text-decoration-none">{{ app.job_title }}</a></td>
+                                <td>{{ app.company_name }}</td>
+                                <td class="small">{{ app.resume_file_name }}</td>
+                                <td class="match-score-pill">{{ app.match_score }}%</td>
+                                <td><span class="badge bg-primary-subtle text-primary badge-status">{{ app.current_status }}</span></td>
+                                <td class="small text-muted">{{ app.applied_at }}</td>
+                                <td class="text-end text-nowrap">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary btn-view-history"
+                                            data-bs-toggle="modal" data-bs-target="#applicationHistoryModal"
+                                            data-app-id="{{ app.application_id }}" data-job-title="{{ app.job_title }}">
+                                        History
+                                    </button>
+                                    {% if app.current_status not in ('WITHDRAWN', 'REJECTED', 'OFFERED') %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                data-api-action="/api/candidate/applications/{{ app.application_id }}/withdraw"
+                                                data-api-method="POST"
+                                                data-confirm="Withdraw your application for {{ app.job_title }}?">
+                                            Withdraw
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="7" class="text-center text-muted py-4">No applications submitted yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="applicationHistoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historyModalTitle">Application Status History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="historyModalBody">Loading...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

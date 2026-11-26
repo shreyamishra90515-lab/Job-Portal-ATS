@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block title %}Manage Jobs | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="h3 fw-bold mb-0">Manage My Job Postings</h1>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createJobModal">
+                <i class="bi bi-plus-lg me-1"></i>Create Job
+            </button>
+        </div>
+
+        <div class="d-grid gap-3">
+            {% for j in jobs %}
+                <div class="ats-card p-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-start gap-2 mb-2">
+                        <div>
+                            <div class="d-flex gap-2 mb-1">
+                                <span class="badge {% if j.status == 'ACTIVE' %}bg-success{% elif j.status == 'DRAFT' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ j.status }}</span>
+                                <span class="badge bg-light text-dark">{{ j.employment_type }}</span>
+                                <span class="badge bg-light text-dark">{{ j.workplace_type }}</span>
+                            </div>
+                            <h2 class="h5 fw-bold mb-0">{{ j.title }}</h2>
+                            <small class="text-muted">{{ j.location }} · Min {{ j.min_experience_years }} yrs · Deadline: {{ j.deadline_date or 'None' }}</small>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ url_for('web.recruiter_job_applicants_page', job_id=j.job_id) }}" class="btn btn-sm btn-primary">
+                                Applicants ({{ j.total_applications }})
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary btn-edit-job"
+                                    data-bs-toggle="modal" data-bs-target="#editJobModal"
+                                    data-job-id="{{ j.job_id }}"
+                                    data-title="{{ j.title }}"
+                                    data-description="{{ j.description }}"
+                                    data-location="{{ j.location }}"
+                                    data-employment-type="{{ j.employment_type }}"
+                                    data-workplace-type="{{ j.workplace_type }}"
+                                    data-min-exp="{{ j.min_experience_years }}"
+                                    data-salary-min="{{ j.salary_min if j.salary_min is not none else '' }}"
+                                    data-salary-max="{{ j.salary_max if j.salary_max is not none else '' }}"
+                                    data-status="{{ j.status }}"
+                                    data-deadline="{{ j.deadline_date or '' }}">
+                                Edit Job
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info btn-manage-job-skills"
+                                    data-bs-toggle="modal" data-bs-target="#jobSkillsModal"
+                                    data-job-id="{{ j.job_id }}" data-job-title="{{ j.title }}">
+                                Add Skill
+                            </button>
+                        </div>
+                    </div>
+                    <p class="small text-secondary mb-2">{{ j.description }}</p>
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <span class="small text-muted me-1">Skills:</span>
+                        {% for sk in skills_by_job.get(j.job_id, []) %}
+                            <span class="badge bg-light text-dark border">
+                                {{ sk.skill_name }} ({{ sk.requirement_type }}, {{ sk.min_years_experience }}y)
+                                <button type="button" class="btn-close btn-close-sm ms-1 align-middle"
+                                        style="font-size:0.6rem"
+                                        aria-label="Remove skill"
+                                        data-api-action="/api/jobs/{{ j.job_id }}/skills/{{ sk.skill_id }}"
+                                        data-api-method="DELETE"></button>
+                            </span>
+                        {% else %}
+                            <span class="small text-muted">None specified</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="ats-card p-5 text-center text-muted">No jobs posted yet. Click "Create Job" to publish your first opening.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Create Job Modal -->
+<div class="modal fade" id="createJobModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <form class="modal-content" data-api-url="/api/jobs" data-api-method="POST" data-reload="true">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Job Requisition</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body row g-3">
+                <div class="col-md-8">
+                    <label class="form-label small fw-medium">Job Title *</label>
+                    <input type="text" class="form-control" name="title" required maxlength="200">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-medium">Status</label>
+                    <select class="form-select" name="status">
+                        {% for s in job_status_options %}<option value="{{ s }}" {% if s == 'ACTIVE' %}selected{% endif %}>{{ s }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-medium">Employment Type</label>
+                    <select class="form-select" name="employment_type">
+                        {% for e in employment_options %}<option value="{{ e }}">{{ e }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-medium">Workplace Type</label>
+                    <select class="form-select" name="workplace_type">
+                        {% for w in workplace_options %}<option value="{{ w }}">{{ w }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-medium">Location *</label>
+                    <input type="text" class="form-control" name="location" required maxlength="150">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-medium">Min Exp (yrs)</label>
+                    <input type="number" step="0.5" min="0" max="60" class="form-control" name="min_experience_years" value="2.0">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-medium">Salary Min</label>
+                    <input type="number" step="1000" min="0" class="form-control" name="salary_min">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-medium">Salary Max</label>
+                    <input type="number" step="1000" min="0" class="form-control" name="salary_max">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-medium">Deadline Date</label>
+                    <input type="date" class="form-control" name="deadline_date">
+                </div>
+                <div class="col-12">
+                    <label class="form-label small fw-medium">Description *</label>
+                    <textarea class="form-control" name="description" rows="4" required maxlength="5000"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Publish Job</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Job Modal -->
+<div class="modal fade" id="editJobModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <form class="modal-content" id="editJobForm" data-api-url="" data-api-method="PUT" data-reload="true">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Job Requisition</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body row g-3">
+                <div class="col-md-8">
+                    <label class="form-label small fw-medium">Job Title *</label>
+                    <input type="text" class="form-control" name="title" required maxlength="200">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-medium">Status</label>
+                    <select class="form-select" name="status">
+                        {% for s in job_status_options %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-medium">Employment Type</label>
+                    <select class="form-select" name="employment_type">
+                        {% for e in employment_options %}<option value="{{ e }}">{{ e }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-medium">Workplace Type</label>
+                    <select class="form-select" name="workplace_type">
+                        {% for w in workplace_options %}<option value="{{ w }}">{{ w }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-medium">Location *</label>
+                    <input type="text" class="form-control" name="location" required maxlength="150">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-medium">Min Exp (yrs)</label>
+                    <input type="number" step="0.5" min="0" max="60" class="form-control" name="min_experience_years">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-medium">Salary Min</label>
+                    <input type="number" step="1000" min="0" class="form-control" name="salary_min">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-medium">Salary Max</label>
+                    <input type="number" step="1000" min="0" class="form-control" name="salary_max">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-medium">Deadline Date</label>
+                    <input type="date" class="form-control" name="deadline_date">
+                </div>
+                <div class="col-12">
+                    <label class="form-label small fw-medium">Description *</label>
+                    <textarea class="form-control" name="description" rows="4" required maxlength="5000"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Job Skill Modal -->
+<div class="modal fade" id="jobSkillsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="modal-content" id="addJobSkillForm" data-api-url="" data-api-method="POST" data-reload="true">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jobSkillsModalTitle">Add Skill Requirement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body d-grid gap-3">
+                <div>
+                    <label class="form-label small fw-medium">Skill</label>
+                    <select class="form-select" name="skill_id" required>
+                        {% for sk in all_skills %}
+                            <option value="{{ sk.skill_id }}">{{ sk.skill_name }} ({{ sk.category }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label small fw-medium">Min Years Experience</label>
+                    <input type="number" step="0.5" min="0" max="60" class="form-control" name="min_years_experience" value="1.0">
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="is_required" id="jobSkillRequired" checked>
+                    <label class="form-check-label small" for="jobSkillRequired">Mandatory Skill (Weight 2.0x)</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save Skill</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

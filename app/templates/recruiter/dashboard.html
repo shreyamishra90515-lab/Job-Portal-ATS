@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Recruiter Dashboard | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+            <div>
+                <h1 class="h3 fw-bold mb-1">Recruiter Dashboard</h1>
+                <p class="text-muted mb-0">Manage your job requisitions, ranked applicant pipelines, and interview schedules.</p>
+            </div>
+            <a href="{{ url_for('web.recruiter_jobs_page') }}" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Manage / Post Jobs</a>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="ats-card stat-card p-3">
+                    <div class="small text-muted">Active / Total Jobs</div>
+                    <div class="h4 fw-bold mb-0">{{ totals.active_jobs }} / {{ totals.total_jobs }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="ats-card stat-card stat-info p-3">
+                    <div class="small text-muted">Applications</div>
+                    <div class="h4 fw-bold mb-0">{{ totals.total_applications }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="ats-card stat-card stat-warning p-3">
+                    <div class="small text-muted">Interviews</div>
+                    <div class="h4 fw-bold mb-0">{{ totals.total_interviews }}</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="ats-card stat-card stat-success p-3">
+                    <div class="small text-muted">Offers Extended</div>
+                    <div class="h4 fw-bold mb-0">{{ totals.total_offers }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ats-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 fw-bold mb-0">Job Requisition Performance</h2>
+                <a href="{{ url_for('web.recruiter_jobs_page') }}" class="btn btn-sm btn-outline-primary">Manage Jobs</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Status</th>
+                            <th>Applicants</th>
+                            <th>Avg Match</th>
+                            <th>Interviews</th>
+                            <th>Offers</th>
+                            <th class="text-end">Pipeline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for j in job_perf %}
+                            <tr>
+                                <td class="fw-semibold">{{ j.job_title }}</td>
+                                <td><span class="badge {% if j.job_status == 'ACTIVE' %}bg-success-subtle text-success{% else %}bg-secondary-subtle text-secondary{% endif %}">{{ j.job_status }}</span></td>
+                                <td>{{ j.total_applications }}</td>
+                                <td class="match-score-pill">{{ j.avg_match_score if j.avg_match_score is not none else '—' }}{% if j.avg_match_score is not none %}%{% endif %}</td>
+                                <td>{{ j.total_interviews }}</td>
+                                <td>{{ j.total_offers }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('web.recruiter_job_applicants_page', job_id=j.job_id) }}" class="btn btn-sm btn-outline-primary">View Applicants</a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="7" class="text-center text-muted py-3">No job postings created yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="ats-card p-4">
+            <h2 class="h5 fw-bold mb-3">Recent Applicants</h2>
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Candidate</th>
+                            <th>Job</th>
+                            <th>Match Score</th>
+                            <th>Status</th>
+                            <th>Applied</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in recent_apps %}
+                            <tr>
+                                <td class="fw-semibold">{{ app.candidate_name }}<div class="small text-muted">{{ app.candidate_email }}</div></td>
+                                <td><a href="{{ url_for('web.recruiter_job_applicants_page', job_id=app.job_id) }}" class="text-decoration-none">{{ app.job_title }}</a></td>
+                                <td class="match-score-pill">{{ app.match_score }}%</td>
+                                <td><span class="badge bg-primary-subtle text-primary badge-status">{{ app.current_status }}</span></td>
+                                <td class="small text-muted">{{ app.applied_at }}</td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="text-center text-muted py-3">No applications received yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

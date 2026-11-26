@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Applications Overview | Admin | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <h1 class="h3 fw-bold mb-4">All Platform Applications ({{ applications|length }})</h1>
+        <div class="ats-card p-4">
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Candidate</th>
+                            <th>Job &amp; Company</th>
+                            <th>Match</th>
+                            <th>Status</th>
+                            <th>Applied</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                            <tr>
+                                <td>#{{ app.application_id }}</td>
+                                <td class="fw-semibold">{{ app.candidate_name }}<div class="small text-muted">{{ app.candidate_email }}</div></td>
+                                <td>{{ app.job_title }}<div class="small text-muted">{{ app.company_name }}</div></td>
+                                <td class="match-score-pill">{{ app.match_score }}%</td>
+                                <td><span class="badge bg-primary-subtle text-primary badge-status">{{ app.current_status }}</span></td>
+                                <td class="small text-muted">{{ app.applied_at }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,130 @@
+/* ============================================================================
+   Job Portal & Application Tracking System (ATS) — Phase 5 Design System
+   Responsive Bootstrap 5 Theme (Desktop, Laptop, Tablet, Mobile)
+   ============================================================================ */
+
+:root {
+    --ats-primary: #1d4ed8;
+    --ats-primary-dark: #1e40af;
+    --ats-accent: #0f766e;
+    --ats-bg: #f8fafc;
+    --ats-surface: #ffffff;
+    --ats-border: #e2e8f0;
+    --ats-text: #0f172a;
+    --ats-muted: #64748b;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--ats-bg);
+    color: var(--ats-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+.navbar-ats {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.navbar-ats .navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.hero-ats {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #1d4ed8 100%);
+    color: #ffffff;
+    border-radius: 1rem;
+    padding: 3rem 2.25rem;
+    box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.35);
+}
+
+.ats-card {
+    background-color: var(--ats-surface);
+    border: 1px solid var(--ats-border);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ats-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -10px rgba(15, 23, 42, 0.12);
+}
+
+.stat-card {
+    border-left: 4px solid var(--ats-primary);
+}
+
+.stat-card.stat-success {
+    border-left-color: #15803d;
+}
+
+.stat-card.stat-warning {
+    border-left-color: #d97706;
+}
+
+.stat-card.stat-info {
+    border-left-color: #0284c7;
+}
+
+.stat-card.stat-danger {
+    border-left-color: #dc2626;
+}
+
+.ats-sidebar .nav-link {
+    color: #334155;
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.9rem;
+    font-weight: 500;
+    margin-bottom: 0.2rem;
+}
+
+.ats-sidebar .nav-link:hover {
+    background-color: #e2e8f0;
+    color: #0f172a;
+}
+
+.ats-sidebar .nav-link.active {
+    background-color: var(--ats-primary);
+    color: #ffffff;
+}
+
+.badge-status {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 0.4em 0.65em;
+}
+
+.match-score-pill {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.table-ats th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ats-muted);
+    border-bottom-width: 1px;
+    background-color: #f8fafc;
+}
+
+.ats-footer {
+    background-color: #0f172a;
+    color: #94a3b8;
+    font-size: 0.875rem;
+}
+
+@media (max-width: 767.98px) {
+    .hero-ats {
+        padding: 2rem 1.25rem;
+    }
+}
+

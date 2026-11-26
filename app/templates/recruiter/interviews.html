@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Recruiter Interviews | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <h1 class="h3 fw-bold mb-4">Scheduled Interviews</h1>
+        <div class="ats-card p-4">
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Candidate &amp; Job</th>
+                            <th>Round</th>
+                            <th>Interviewer</th>
+                            <th>Scheduled At</th>
+                            <th>Status</th>
+                            <th>Rating</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for iv in interviews %}
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">{{ iv.candidate_name }}</div>
+                                    <div class="small text-muted">{{ iv.job_title }}</div>
+                                </td>
+                                <td>Round {{ iv.round_number }}<div class="small text-muted">{{ iv.round_type }}</div></td>
+                                <td>{{ iv.interviewer_name }}</td>
+                                <td class="small">{{ iv.scheduled_at }} ({{ iv.duration_minutes }}m)</td>
+                                <td><span class="badge bg-info-subtle text-info-emphasis badge-status">{{ iv.interview_status }}</span></td>
+                                <td>{{ iv.rating ~ '/5' if iv.rating else '—' }}</td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary btn-edit-interview"
+                                            data-bs-toggle="modal" data-bs-target="#editInterviewModal"
+                                            data-interview-id="{{ iv.interview_id }}"
+                                            data-candidate-name="{{ iv.candidate_name }}"
+                                            data-status="{{ iv.interview_status }}"
+                                            data-rating="{{ iv.rating or '' }}"
+                                            data-feedback="{{ iv.feedback or '' }}">
+                                        Evaluate
+                                    </button>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="7" class="text-center text-muted py-4">No interviews scheduled yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editInterviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form class="modal-content" id="editInterviewForm" data-api-url="" data-api-method="PUT" data-reload="true">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editInterviewModalTitle">Evaluate Interview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body d-grid gap-3">
+                <div>
+                    <label class="form-label small fw-medium">Status</label>
+                    <select class="form-select" name="status" required>
+                        {% for st in interview_statuses %}<option value="{{ st }}">{{ st }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label small fw-medium">Rating (1–5)</label>
+                    <input type="number" min="1" max="5" class="form-control" name="rating">
+                </div>
+                <div>
+                    <label class="form-label small fw-medium">Feedback</label>
+                    <textarea class="form-control" name="feedback" rows="3" maxlength="2000"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-primary">Save Evaluation</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

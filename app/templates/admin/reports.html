@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Executive Reports | Admin | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <h1 class="h3 fw-bold mb-4">Executive ATS Reports (Phase 3 Views)</h1>
+
+        <div class="ats-card p-4 mb-4">
+            <h2 class="h5 fw-bold mb-3">Job Application Statistics (<code>vw_job_application_statistics</code>)</h2>
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Company</th>
+                            <th>Status</th>
+                            <th>Total Apps</th>
+                            <th>Avg Match</th>
+                            <th>Shortlisted</th>
+                            <th>Offered</th>
+                            <th>Rejected</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for js in job_stats %}
+                            <tr>
+                                <td class="fw-semibold">{{ js.job_title }}</td>
+                                <td>{{ js.company_name }}</td>
+                                <td><span class="badge bg-secondary-subtle text-secondary">{{ js.job_status }}</span></td>
+                                <td>{{ js.total_applications }}</td>
+                                <td class="match-score-pill">{{ js.avg_match_score if js.avg_match_score is not none else '—' }}{% if js.avg_match_score is not none %}%{% endif %}</td>
+                                <td>{{ js.shortlisted_count }}</td>
+                                <td>{{ js.offered_count }}</td>
+                                <td>{{ js.rejected_count }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="ats-card p-4">
+            <h2 class="h5 fw-bold mb-3">Candidate Pool Statistics (<code>vw_candidate_application_statistics</code>)</h2>
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Candidate</th>
+                            <th>Exp</th>
+                            <th>Total Apps</th>
+                            <th>Active</th>
+                            <th>Avg Match</th>
+                            <th>Interviews</th>
+                            <th>Offers</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cs in candidate_stats %}
+                            <tr>
+                                <td class="fw-semibold">{{ cs.candidate_name }}<div class="small text-muted">{{ cs.candidate_email }}</div></td>
+                                <td>{{ cs.years_of_experience }}y</td>
+                                <td>{{ cs.total_applications }}</td>
+                                <td>{{ cs.active_applications }}</td>
+                                <td class="match-score-pill">{{ cs.avg_match_score if cs.avg_match_score is not none else '—' }}{% if cs.avg_match_score is not none %}%{% endif %}</td>
+                                <td>{{ cs.total_interviews }}</td>
+                                <td>{{ cs.offers_received }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}My Resumes | ATS Portal{% endblock %}
+{% block content %}
+<div class="row">
+    {% include "_partials/portal_sidebar.html" %}
+    <div class="col-lg-9">
+        <h1 class="h3 fw-bold mb-4">Resume Management</h1>
+
+        <div class="ats-card p-4 mb-4">
+            <h2 class="h5 fw-bold mb-2">Register Resume</h2>
+            <p class="text-muted small mb-3">
+                Allowed extensions: <code>.pdf</code>, <code>.doc</code>, <code>.docx</code>. Path traversal characters are blocked by Phase 4 validation.
+            </p>
+            <form data-api-url="/api/candidate/resumes" data-api-method="POST" data-reload="true" class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small fw-medium mb-1">Resume File Name *</label>
+                    <input type="text" class="form-control" name="file_name" required placeholder="john_doe_resume.pdf">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-medium mb-1">File Size (KB)</label>
+                    <input type="number" min="1" max="20480" class="form-control" name="file_size_kb" value="200">
+                </div>
+                <div class="col-md-2">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="is_primary" id="resumePrimaryCheck">
+                        <label class="form-check-label small" for="resumePrimaryCheck">Primary</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Add Resume</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="ats-card p-4">
+            <h2 class="h5 fw-bold mb-3">My Resumes</h2>
+            <div class="table-responsive">
+                <table class="table table-hover table-ats align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Size</th>
+                            <th>Primary</th>
+                            <th>Uploaded</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in resumes %}
+                            <tr>
+                                <td class="fw-semibold"><i class="bi bi-file-earmark-pdf text-danger me-2"></i>{{ r.file_name }}</td>
+                                <td>{{ r.file_size_kb or '—' }} KB</td>
+                                <td>
+                                    {% if r.is_primary %}
+                                        <span class="badge bg-success">Primary</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">Secondary</span>
+                                    {% endif %}
+                                </td>
+                                <td class="small text-muted">{{ r.uploaded_at }}</td>
+                                <td class="text-end">
+                                    {% if not r.is_primary %}
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                                data-api-action="/api/resumes/{{ r.resume_id }}/primary"
+                                                data-api-method="POST">Set Primary</button>
+                                    {% endif %}
+                                    {% if r.used_in_apps == 0 %}
+                                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                                data-api-action="/api/resumes/{{ r.resume_id }}"
+                                                data-api-method="DELETE"
+                                                data-confirm="Delete {{ r.file_name }}?">Delete</button>
+                                    {% else %}
+                                        <span class="badge bg-secondary-subtle text-secondary">Attached to Application</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="5" class="text-center text-muted py-3">No resumes registered yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
